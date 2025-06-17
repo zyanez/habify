@@ -1,0 +1,68 @@
+{% extends 'habits/base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center py-16 px-6">
+        <div class="mb-8">
+            <h1 class="text-5xl font-bold mb-6 text-sage-800 leading-tight">
+                Bienvenido a Habify
+                <span class="block text-3xl font-normal text-sage-600 mt-2">🌱</span>
+            </h1>
+            <p class="text-xl text-sage-600 max-w-2xl mx-auto leading-relaxed">
+                Tu jardín personal de hábitos saludables.
+            </p>
+        </div>
+
+        <div class="flex justify-center gap-4 mb-16">
+            {% if not user.is_authenticated %}
+            <a href="{% url 'register' %}"
+                class="bg-sage-600 text-white px-8 py-3 rounded-xl hover:bg-sage-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium">
+                Comenzar Ahora
+            </a>
+            <a href="{% url 'login' %}"
+                class="border-2 border-sage-300 text-sage-700 px-8 py-3 rounded-xl hover:bg-sage-50 transition-all duration-200 font-medium">
+                Iniciar Sesión
+            </a>
+            {% else %}
+            <a href="{% url 'dashboard' %}"
+                class="bg-sage-600 text-white px-8 py-3 rounded-xl hover:bg-sage-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium">
+                Ver Mi Jardín
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="p-8">
+        <div class="flex items-center gap-3 mb-6">
+            <span class="text-2xl">🌿</span>
+            <h2 class="text-2xl font-semibold text-sage-800">Hábitos de la Comunidad</h2>
+        </div>
+
+        {% if habits %}
+        <div class="grid gap-4">
+            {% for item in habits %}
+            <div
+                class="bg-white rounded-xl p-6 shadow-sm border border-sage-100 hover:shadow-md transition-all duration-200 hover:border-sage-200">
+                <div class="flex items-start gap-4">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-sage-100 to-sage-200 rounded-full flex items-center justify-center text-xl">
+                        {{ item.emoji }}
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-sage-800 text-lg mb-1">{{ item.habit.name }}</h3>
+                        <p class="text-sage-600 leading-relaxed mb-1">{{ item.habit.description }}</p>
+                        <p class="text-sage-500 text-sm">Racha: <strong>{{ item.streak }} días</strong> • de {{ item.habit.user.username }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <div class="text-6xl mb-4">🌱</div>
+            <p class="text-sage-600 text-lg">Aún no hay hábitos públicos.</p>
+            <p class="text-sage-500 mt-2">¡Sé el primero en compartir un hábito saludable!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

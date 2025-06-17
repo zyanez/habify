@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Habify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sage: {
+                            50: '#f6f7f6',
+                            100: '#e3e8e3',
+                            200: '#c7d2c7',
+                            300: '#a3b5a3',
+                            400: '#7a947a',
+                            500: '#5a7a5a',
+                            600: '#4a6b4a',
+                            700: '#3d5a3d',
+                            800: '#334a33',
+                            900: '#2b3e2b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gradient-to-br from-sage-50 to-green-50 text-gray-800 min-h-screen">
+    <nav class="bg-white/80 backdrop-blur-sm border-b border-sage-200 p-4 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <a href="/" class="font-bold text-xl text-sage-700 hover:text-sage-800 transition-colors flex items-center gap-2">
+                🌱 Habify
+            </a>
+            <div class="flex items-center gap-1">
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="px-4 py-2 text-sage-600 hover:text-sage-800 hover:bg-sage-50 rounded-lg transition-all duration-200">Dashboard</a>
+                <form method="post" action="{% url 'logout' %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="px-4 py-2 text-sage-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200">
+                        Logout
+                    </button>
+                </form>
+                {% else %}
+                <a href="{% url 'login' %}" class="px-4 py-2 text-sage-600 hover:text-sage-800 hover:bg-sage-50 rounded-lg transition-all duration-200">Login</a>
+                <a href="{% url 'register' %}" class="px-4 py-2 bg-sage-600 text-white hover:bg-sage-700 rounded-lg transition-all duration-200 shadow-sm">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <main class="p-4 pb-12">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

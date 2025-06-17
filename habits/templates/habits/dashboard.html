@@ -1,0 +1,71 @@
+{% extends 'habits/base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold mb-4 text-sage-800 flex items-center justify-center gap-3">
+            <span class="text-3xl">🌿</span>
+            Tu Jardín de Hábitos
+        </h2>
+        <p class="text-sage-600 text-lg">Cultiva tus rutinas diarias y observa cómo florecen</p>
+    </div>
+
+    <div class="flex justify-center mb-8">
+        <a href="{% url 'habit_create' %}"
+            class="bg-sage-600 text-white px-6 py-3 rounded-xl hover:bg-sage-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium flex items-center gap-2">
+            <span class="text-lg">+</span>
+            Plantar Nuevo Hábito
+        </a>
+    </div>
+
+    {% if habits %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for habit in habits %}
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-sage-100 hover:shadow-lg transition-all duration-300 hover:border-sage-200 group">
+            <div class="w-14 h-14 bg-gradient-to-br from-sage-100 to-sage-200 rounded-2xl flex items-center justify-center text-2xl mb-4">
+                {% with streak=habit.streak %}
+                    {% if streak >= 21 %}🌳
+                    {% elif streak >= 14 %}🌲
+                    {% elif streak >= 7 %}🌿
+                    {% elif streak >= 3 %}🌱
+                    {% else %}🌰{% endif %}
+                {% endwith %}
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold text-sage-800 mb-1 leading-tight">{{ habit.name }}</h3>
+                <p class="text-sage-600 text-sm mb-2">{{ habit.description }}</p>
+                <p class="text-sage-500 text-xs">Racha actual: {{ habit.streak }} día{{ habit.streak|pluralize }}</p>
+            </div>
+
+            <form action="{% url 'habit_toggle_progress' habit.pk %}" method="post" class="mb-3">
+                {% csrf_token %}
+                {% if habit.completed_today %}
+                <button type="submit" disabled
+                    class="bg-green-200 text-green-800 px-4 py-2 rounded-lg text-sm font-medium">
+                    ✅ Completado Hoy
+                </button>
+                {% else %}
+                <button type="submit"
+                    class="bg-sage-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-sage-700 transition-all">
+                    Marcar como Hecho Hoy
+                </button>
+                {% endif %}
+            </form>
+
+            <div class="flex justify-between items-center pt-3 border-t border-sage-100">
+                <a href="{% url 'habit_edit' habit.pk %}"
+                    class="text-sage-600 hover:text-sage-800 text-sm">✏️ Editar</a>
+                <a href="{% url 'habit_delete' habit.pk %}"
+                    class="text-red-500 hover:text-red-700 text-sm">🗑️ Eliminar</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20 text-sage-600">
+        <div class="text-6xl mb-4">🌱</div>
+        <p class="text-xl">Aún no has creado hábitos. ¡Planta tu primer semilla!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

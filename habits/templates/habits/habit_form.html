@@ -1,0 +1,39 @@
+{% extends 'habits/base.html' %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="bg-white rounded-2xl p-8 shadow-sm border border-sage-100">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-gradient-to-br from-sage-100 to-sage-200 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
+                🌱
+            </div>
+            <h2 class="text-3xl font-bold text-sage-800 mb-2">
+                {% if form.instance.pk %}Cultivar Hábito{% else %}Plantar Nuevo Hábito{% endif %}
+            </h2>
+            <p class="text-sage-600">
+                {% if form.instance.pk %}Mejora tu hábito existente{% else %}Siembra una nueva rutina saludable{% endif %}
+            </p>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                {{ form.as_p }}
+            </div>
+            
+            <div class="pt-6">
+                <button type="submit" class="w-full bg-sage-600 text-white py-3 px-6 rounded-xl hover:bg-sage-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium text-lg">
+                    {% if form.instance.pk %}💚 Actualizar Hábito{% else %}🌱 Plantar Hábito{% endif %}
+                </button>
+            </div>
+        </form>
+
+        <div class="text-center mt-6">
+            <a href="{% url 'dashboard' %}" class="text-sage-600 hover:text-sage-800 font-medium hover:underline transition-colors duration-200">
+                ← Volver al jardín
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

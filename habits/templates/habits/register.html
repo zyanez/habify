@@ -1,0 +1,36 @@
+{% extends 'habits/base.html' %}
+{% block content %}
+<div class="max-w-md mx-auto">
+    <div class="bg-white rounded-2xl p-8 shadow-sm border border-sage-100">
+        <div class="text-center mb-8">
+            <div
+                class="w-16 h-16 bg-gradient-to-br from-sage-100 to-sage-200 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
+                🌱
+            </div>
+            <h2 class="text-3xl font-bold text-sage-800 mb-2">Únete a Habify</h2>
+            <p class="text-sage-600">Comienza tu jardín de hábitos saludables</p>
+        </div>
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="space-y-6">
+                {{ form.as_p }}
+            </div>
+
+            <div class="pt-6">
+                <button type="submit"
+                    class="w-full bg-sage-600 text-white py-3 px-6 rounded-xl hover:bg-sage-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium text-lg">
+                    🌱 Crear Mi Jardín
+                </button>
+            </div>
+        </form>
+        <div class="text-center mt-6 pt-6 border-t border-sage-100">
+            <p class="text-sage-600 mb-3">¿Ya tienes una cuenta?</p>
+            <a href="{% url 'login' %}"
+                class="text-sage-700 hover:text-sage-800 font-medium hover:underline transition-colors duration-200">
+                Iniciar sesión
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
