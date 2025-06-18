@@ -3,17 +3,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 class UserProfile(models.Model):
-    THEME_CHOICES = [
-        ('light', 'Claro'),
-        ('dark', 'Oscuro'),
-    ]
-    
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     badges = models.JSONField(default=list, blank=True)
-    theme = models.CharField(max_length=20, choices=THEME_CHOICES, default='light')
-    theme_expires = models.DateField(null=True, blank=True)
-    is_highlighted = models.BooleanField(default=False)
-    highlight_expires = models.DateField(null=True, blank=True)
     
     def __str__(self):
         return f"Perfil de {self.user.username}"
@@ -30,6 +21,13 @@ class Habit(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def get_streak_emoji(self):
+        if self.streak >= 21: return "🌳"
+        elif self.streak >= 14: return "🌲"
+        elif self.streak >= 7: return "🌿"
+        elif self.streak >= 3: return "🌱"
+        return "🌰"
     
     @property
     def completed_today(self):

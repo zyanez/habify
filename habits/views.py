@@ -15,56 +15,23 @@ def home(request):
     habit_data = []
 
     for habit in habits:
-        streak = habit.streak
-        if streak >= 21:
-            emoji = "🌳"
-        elif streak >= 14:
-            emoji = "🌲"
-        elif streak >= 7:
-            emoji = "🌿"
-        elif streak >= 3:
-            emoji = "🌱"
-        else:
-            emoji = "🌰"
+        emoji = habit.get_streak_emoji()
 
         habit_data.append({
             "habit": habit,
             "emoji": emoji,
-            "streak": streak,
+            "streak": habit.streak,
             "owner": habit.user.username,
         })
 
     return render(request, 'habits/home.html', {"habits": habit_data})
-
-@login_required
-def habit_stats(request):
-    habits = Habit.objects.filter(user=request.user)
-    
-    stats = {
-        'total_habits': habits.count(),
-        'total_streak': sum(h.streak for h in habits),
-        'best_streak': max(h.streak for h in habits) if habits else 0,
-    }
-    
-    today = timezone.now().date()
-    start_date = today - timedelta(days=30)
-    
-    progress = HabitProgress.objects.filter(
-        habit__user=request.user,
-        date__gte=start_date
-    )
-    
-    completed = progress.filter(completed=True).count()
-    total = progress.count()
-    stats['completion_rate'] = completed / total * 100 if total > 0 else 0
-    
-    return render(request, 'habits/stats.html', {'stats': stats})
 
 def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            UserProfile.objects.create(user=user)
             login(request, user)
             return redirect('dashboard')
     else:
@@ -101,7 +68,6 @@ def habit_create(request):
             emoji = habit_emoji
             
         if not name or not emoji:
-            messages.error(request, "Nombre y emoji son requeridos")
             return redirect('habit_create')
             
         Habit.objects.create(
@@ -163,32 +129,8 @@ def habit_delete(request, pk):
     habit = get_object_or_404(Habit, pk=pk, user=request.user)
     if request.method == 'POST':
         habit.delete()
-        messages.success(request, 'Hábito eliminado correctamente.')
         return redirect('dashboard')
     return render(request, 'habits/habit_confirm_delete.html', {'habit': habit})
-
-@login_required
-def habit_toggle_progress(request, pk):
-    habit = get_object_or_404(Habit, pk=pk, user=request.user)
-    today = timezone.now().date()
-
-    progress, created = HabitProgress.objects.update_or_create(
-        habit=habit,
-        date=today,
-        defaults={'completed': True}
-    )
-    
-    if created or progress.completed:
-        if habit.last_completed == today - timedelta(days=1):
-            habit.streak += 1
-        elif habit.last_completed != today:
-            habit.streak = 1
-        habit.last_completed = today
-        habit.save()
-        
-        check_achievements(request, habit)
-
-    return redirect('dashboard')
 
 @login_required
 def add_7_days_streak(request, pk):
@@ -233,28 +175,28 @@ def habit_toggle_progress(request, pk):
     return redirect('dashboard')
 
 def check_achievements(request, habit=None):
-    user = request.user 
-    profile, _ = UserProfile.objects.get_or_create(user=user)
+    user = request.user
+    profile = UserProfile.objects.get_or_create(user=user)[0]
+    unlocked = False
+    
     achievements = Achievement.objects.all()
-    unlocked_achievements = []
+    habit_count = Habit.objects.filter(user=user).count()
     
     for achievement in achievements:
+        if achievement.badge_value in profile.badges:
+            continue
+            
         if achievement.condition.startswith('streak_'):
-            required_streak = int(achievement.condition.split('_')[1])
-            if habit and habit.streak >= required_streak:
-                if achievement.badge_value not in profile.badges:
-                    profile.badges.append(achievement.badge_value)
-                    unlocked_achievements.append(achievement.name)
-        
+            required = int(achievement.condition.split('_')[1])
+            if habit and habit.streak >= required:
+                profile.badges.append(achievement.badge_value)
+                unlocked = True
+                
         elif achievement.condition.startswith('habit_count_'):
-            required_count = int(achievement.condition.split('_')[2])
-            habit_count = Habit.objects.filter(user=user).count()
-            if habit_count >= required_count:
-                if achievement.badge_value not in profile.badges:
-                    profile.badges.append(achievement.badge_value)
-                    unlocked_achievements.append(achievement.name)
+            required = int(achievement.condition.split('_')[2])
+            if habit_count >= required:
+                profile.badges.append(achievement.badge_value)
+                unlocked = True
     
-    if unlocked_achievements:
+    if unlocked:
         profile.save()
-        for achievement_name in unlocked_achievements:
-            messages.success(request, f'¡Logro desbloqueado: {achievement_name}!')
