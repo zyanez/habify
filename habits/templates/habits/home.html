@@ -48,7 +48,7 @@
                         {{ item.emoji }}
                     </div>
                     <div class="flex-1">
-                        <h3 class="font-semibold text-sage-800 text-lg mb-1">{{ item.habit.name }}</h3>
+                        <h3 class="font-semibold text-sage-800 text-lg mb-1">{{ item.habit.name }} {{ item.habit.emoji }}</h3>
                         <p class="text-sage-600 leading-relaxed mb-1">{{ item.habit.description }}</p>
                         <p class="text-sage-500 text-sm">Racha: <strong>{{ item.streak }} días</strong> • de {{ item.habit.user.username }}</p>
                     </div>
@@ -60,7 +60,7 @@
         <div class="text-center py-12">
             <div class="text-6xl mb-4">🌱</div>
             <p class="text-sage-600 text-lg">Aún no hay hábitos públicos.</p>
-            <p class="text-sage-500 mt-2">¡Sé el primero en compartir un hábito saludable!</p>
+            <p class="text-sage-500 mt-2">Sé el primero.</p>
         </div>
         {% endif %}
     </div>

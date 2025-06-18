@@ -1,0 +1,34 @@
+python manage.py shell
+
+
+from habits.models import Achievement
+
+Achievement.objects.all().delete()
+
+Achievement.objects.create(
+    name="Pionero",
+    description="Crea tu primer hábito",
+    condition="habit_count_1",
+    badge_value="Pionero"
+)
+
+Achievement.objects.create(
+    name="Constante",
+    description="Alcanza una racha de 7 días",
+    condition="streak_7",
+    badge_value="Constante"
+)
+
+Achievement.objects.create(
+    name="Maestro de Hábitos",
+    description="Alcanza una racha de 21 días",
+    condition="streak_21",
+    badge_value="Maestro"
+)
+
+Achievement.objects.create(
+    name="Coleccionista",
+    description="Crea al menos 3 hábitos",
+    condition="habit_count_3",
+    badge_value="Coleccionista"
+)

@@ -1,39 +1,176 @@
 {% extends 'habits/base.html' %}
 {% block content %}
-<div class="max-w-lg mx-auto">
+<div class="max-w-2xl mx-auto">
     <div class="bg-white rounded-2xl p-8 shadow-sm border border-sage-100">
         <div class="text-center mb-8">
             <div class="w-16 h-16 bg-gradient-to-br from-sage-100 to-sage-200 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
                 🌱
             </div>
-            <h2 class="text-3xl font-bold text-sage-800 mb-2">
-                {% if form.instance.pk %}Cultivar Hábito{% else %}Plantar Nuevo Hábito{% endif %}
-            </h2>
-            <p class="text-sage-600">
-                {% if form.instance.pk %}Mejora tu hábito existente{% else %}Siembra una nueva rutina saludable{% endif %}
-            </p>
+            <h2 class="text-3xl font-bold text-sage-800 mb-2">{{ title|default:'Plantar Nuevo Hábito' }}</h2>
+            <p class="text-sage-600">Siembra una nueva rutina saludable</p>
         </div>
 
-        <form method="POST" class="space-y-6">
+        <form method="POST" class="space-y-6" id="habit-form">
             {% csrf_token %}
+            <input type="hidden" name="habit_name" id="habit_name" value="">
+            <input type="hidden" name="habit_emoji" id="habit_emoji" value="">
             
-            <div class="space-y-6">
-                {{ form.as_p }}
+            <div id="default-habits">
+                <p class="text-sage-700 text-center mb-4">Selecciona un hábito predeterminado:</p>
+                
+                <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+                    {% for habit in habits %}
+                    <button type="button"
+                        class="habit-button bg-sage-50 hover:bg-sage-100 border border-sage-200 rounded-xl py-4 px-2 flex flex-col items-center justify-center transition duration-200"
+                        data-name="{{ habit.name }}"
+                        data-emoji="{{ habit.icon }}"
+                        onclick="selectDefaultHabit(this, '{{ habit.label }}', '{{ habit.icon }}')">
+                        <div class="text-2xl mb-2">{{ habit.icon }}</div>
+                        <div class="font-semibold text-sage-800 text-sm">{{ habit.label }}</div>
+                    </button>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center mb-4">
+                    <button type="button" onclick="showCustomHabit()"
+                        class="text-sage-600 hover:text-sage-800 hover:underline transition">
+                        O añade el tuyo propio
+                    </button>
+                </div>
             </div>
-            
+
+            <div id="custom-habit" class="hidden">
+                <div>
+                    <label for="custom_name" class="block font-medium text-sage-700">Nombre del hábito *</label>
+                    <input type="text" name="custom_name" id="custom_name"
+                        class="w-full mt-1 border rounded-xl px-4 py-2">
+                </div>
+
+                <div class="mt-4">
+                    <label class="block font-medium text-sage-700 mb-2">Selecciona un emoji *</label>
+                    <div class="grid grid-cols-6 gap-3" id="emoji-grid">
+                        {% for emoji in emoji_options %}
+                            <button type="button" class="emoji-option text-2xl border border-sage-200 rounded-xl p-2 hover:bg-sage-100" data-emoji="{{ emoji }}" onclick="selectEmoji(this)">{{ emoji }}</button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label for="custom_description" class="block font-medium text-sage-700">Descripción (opcional)</label>
+                    <textarea name="custom_description" id="custom_description"
+                        class="w-full mt-1 border rounded-xl px-4 py-2" rows="2"></textarea>
+                </div>
+                
+                <div class="text-center mt-6">
+                    <button type="button" onclick="showDefaultHabits()"
+                        class="text-sage-600 hover:text-sage-800 hover:underline transition">
+                        Volver a sugerencias
+                    </button>
+                </div>
+            </div>
+
             <div class="pt-6">
-                <button type="submit" class="w-full bg-sage-600 text-white py-3 px-6 rounded-xl hover:bg-sage-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium text-lg">
-                    {% if form.instance.pk %}💚 Actualizar Hábito{% else %}🌱 Plantar Hábito{% endif %}
+                <button type="submit"
+                    class="w-full bg-sage-600 text-white py-3 px-6 rounded-xl hover:bg-sage-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium text-lg disabled:opacity-50"
+                    id="submitBtn" disabled>
+                    🌱 {{ submit_text|default:'Plantar Hábito' }}
                 </button>
             </div>
         </form>
 
         <div class="text-center mt-6">
-            <a href="{% url 'dashboard' %}" class="text-sage-600 hover:text-sage-800 font-medium hover:underline transition-colors duration-200">
-                ← Volver al jardín
-            </a>
+            <a href="{% url 'dashboard' %}" class="text-sage-600 hover:text-sage-800 font-medium hover:underline transition-colors duration-200">Volver al jardín</a>
         </div>
     </div>
 </div>
 
+<script>
+    const defaultHabitsSection = document.getElementById('default-habits');
+    const customHabitSection = document.getElementById('custom-habit');
+    const submitBtn = document.getElementById('submitBtn');
+    const habitEmojiInput = document.getElementById('habit_emoji');
+    const habitNameInput = document.getElementById('habit_name');
+    const habitForm = document.getElementById('habit-form');
+    let selectedHabit = null;
+    let selectedEmoji = null;
+
+    habitForm.addEventListener('submit', function(e) {
+        if (submitBtn.disabled) {
+            e.preventDefault();
+            return false;
+        }
+        return true;
+    });
+
+    function selectDefaultHabit(button, name, emoji) {
+        document.querySelectorAll('.habit-button').forEach(btn => {
+            btn.classList.remove('bg-sage-100', 'border-sage-500');
+        });
+        
+        button.classList.add('bg-sage-100', 'border-sage-500');
+        selectedHabit = { name, emoji };
+        habitNameInput.value = name;
+        habitEmojiInput.value = emoji;
+        submitBtn.disabled = false;
+    }
+
+    function selectEmoji(button) {
+        document.querySelectorAll('.emoji-option').forEach(btn => {
+            btn.classList.remove('bg-sage-100');
+        });
+        
+        button.classList.add('bg-sage-100');
+        selectedEmoji = button.dataset.emoji;
+        habitEmojiInput.value = selectedEmoji;
+        
+        validateCustomForm();
+    }
+
+    function showCustomHabit() {
+        defaultHabitsSection.classList.add('hidden');
+        customHabitSection.classList.remove('hidden');
+        selectedHabit = null;
+        submitBtn.disabled = true;
+        habitNameInput.value = '';
+        habitEmojiInput.value = '';
+    }
+
+    function showDefaultHabits() {
+        customHabitSection.classList.add('hidden');
+        defaultHabitsSection.classList.remove('hidden');
+        submitBtn.disabled = selectedHabit !== null;
+        document.getElementById('custom_name').value = '';
+    }
+
+    function validateCustomForm() {
+        const name = document.getElementById('custom_name').value.trim();
+        const emoji = habitEmojiInput.value.trim();
+        submitBtn.disabled = !(name && emoji);
+    }
+
+    document.getElementById('custom_name').addEventListener('input', function() {
+        validateCustomForm();
+    });
+</script>
+
+{% if editing %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        showCustomHabit();
+        
+        document.getElementById('custom_name').value = "{{ habit.name|escapejs }}";
+        document.getElementById('custom_description').value = "{{ habit.description|escapejs }}";
+        habitEmojiInput.value = "{{ habit.emoji|escapejs }}";
+        
+        const emojiButtons = document.querySelectorAll('.emoji-option');
+        emojiButtons.forEach(btn => {
+            if (btn.dataset.emoji === "{{ habit.emoji }}") {
+                btn.classList.add('bg-sage-100');
+            }
+        });
+        
+        submitBtn.disabled = false;
+    });
+</script>
+{% endif %}
 {% endblock %}
